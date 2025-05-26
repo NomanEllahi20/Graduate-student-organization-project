@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Progress Reports - GSO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/main.js"></script>
+
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .form-section,
+        .table-section {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">GSO</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="students.html">Students</a></li>
+                    <li class="nav-item"><a class="nav-link" href="supervisors.html">Supervisors</a></li>
+                    <li class="nav-item"><a class="nav-link" href="meetings.html">Meetings</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="progress.html">Progress</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="container mt-4">
+        <h2 class="text-center">Student Progress Reports</h2>
+    </div>
+
+    <!-- Progress Report Form -->
+    <div class="container form-section">
+        <form id="progressForm">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="reportID" class="form-label">RQ No.</label>
+                    <input type="text" class="form-control" id="reportID" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="studentID" class="form-label">Student ID</label>
+                    <input type="text" class="form-control" id="studentID" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="reportNumber" class="form-label">Report Number (1-6)</label>
+                    <input type="number" class="form-control" id="reportNumber" min="1" max="6" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="submissionDate" class="form-label">Submission Date</label>
+                    <input type="date" class="form-control" id="submissionDate" required>
+                </div>
+                <div class="col-md-8">
+                    <label for="remarks" class="form-label">Remarks</label>
+                    <input type="text" class="form-control" id="remarks">
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">Save Progress Report</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Progress Report Table -->
+    <div class="container table-section">
+        <h4>All Progress Reports</h4>
+        <table class="table table-bordered table-hover mt-3" id="progressTable">
+            <thead class="table-dark">
+                <tr>
+                    <th>RQ NO.</th>
+                    <th>Student ID</th>
+                    <th>Report No.</th>
+                    <th>Submission Date</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody id="progressTableBody">
+                <!-- Filled via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        document.getElementById("progressForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const progress = {
+                report_id: document.getElementById("reportID").value,
+                student_id: document.getElementById("studentID").value,
+                report_number: document.getElementById("reportNumber").value,
+                submission_date: document.getElementById("submissionDate").value,
+                remarks: document.getElementById("remarks").value
+            };
+
+            fetch("http://localhost:5000/api/progress", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(progress)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert("Progress report saved successfully!");
+                    document.getElementById("progressForm").reset();
+                    loadProgressReports();
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error saving progress report.");
+                });
+        });
+
+        function loadProgressReports() {
+            fetch("http://localhost:5000/api/progress")
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById("progressTableBody");
+                    tbody.innerHTML = "";
+                    data.forEach(report => {
+                        tbody.innerHTML += `
+          <tr>
+            <td>${report.report_id}</td>
+            <td>${report.student_id}</td>
+            <td>${report.report_number}</td>
+            <td>${report.submission_date}</td>
+            <td>${report.remarks}</td>
+          </tr>`;
+                    });
+                });
+        }
+
+        window.onload = loadProgressReports;
+    </script>
+</body>
+
+</html>
